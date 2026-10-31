@@ -1,0 +1,139 @@
+# Transparency Portal
+
+A small, forkable website that shows citizens **every FY 2027 budget project** for one
+LGU (province, city or municipality) or one DPWH district engineering office: what the
+NEP gave it, what the House bill (House Bill 10858) gives it, what was added or dropped,
+and the page of the source document each figure is on.
+
+It has no backend and no database. Everything comes from the public
+[BetterGov.ph Budget API](https://budget.bettergov.ph/docs), the same data behind
+[budget.bettergov.ph](https://budget.bettergov.ph/hgab/2027/overview). Build it once and
+host the static files anywhere: Cloudflare, Vercel, Netlify, GitHub Pages or a plain web
+server.
+
+## Five minutes to your own portal
+
+```bash
+git clone https://github.com/bettergovph/transparency-portal my-portal
+cd my-portal
+npm install
+npm run setup     # pick your province, city, municipality or DPWH office
+npm run check     # counts every query against the live API
+npm run dev       # http://localhost:5132
+```
+
+`npm run setup` asks a few questions, looks up exact names and ids in the API, and
+writes `portal.config.ts`. That file is the only one a fork needs to change.
+
+## What the portal shows
+
+| Page | What is on it |
+| --- | --- |
+| **Projects** (`/`) | The headline figures; the DPWH offices in scope (`#offices`), each with its 2027 figures, tier and status counts, and under it the legislative districts it serves with their representatives (a shared office's money is shown once, never split); the six statuses; and every project with search, filters (program, status, DPWH office, reason), sorting and a CSV download. An office's line count or status opens the list filtered to it. Filters live in the URL, so a filtered list can be shared. |
+| **A project** (`/projects/:program/:id`) | The amount in every version with a link to the exact PDF page, how the two versions were matched, notes on the line, and why it is in this portal. |
+| **About the data** (`/about`) | Every question the portal asks the API, with counts and a link to check each one, every line removed by hand and why, the source documents, plain-language rules and terms, and the notices. |
+
+## How a portal decides which projects are its own
+
+The scope in `portal.config.ts` has three parts. A project is in the portal for one or
+more stated reasons, and every row shows them.
+
+```ts
+scope: {
+  // Every DPWH line the documents list under these offices.
+  offices: ['Bohol 1st District Engineering Office'],
+  // Every line in the four programs whose title names the place.
+  places: [{ label: 'Bohol', region: 'VII' }],
+  // District cards to show (representative, offices, tiers).
+  districts: ['leg:bohol:1st'],
+  // Lines removed by hand. Each needs a reason; the About page publishes them.
+  exclude: [],
+}
+```
+
+- **A DPWH office** brings in its whole ledger. Use this for a DEO portal, and for a
+  province or city with its own district engineering offices.
+- **A place name** searches the titles of all four programs: DPWH, farm-to-market roads,
+  health facilities and irrigation. That catches projects under the DPWH Central Office
+  and the programs that have no office. `q` is the search: every word must appear
+  (`'Carmen Bohol'` needs both). `region` keeps a common name to one region; lines that
+  give no region at all (the irrigation list) are kept, since they cannot be ruled out.
+- **Exclusions** are for namesakes. `npm run check -- --verbose` lists the lines found
+  only by name under another office, which are the ones to review.
+
+Examples for each kind are in [`examples/`](examples): a DEO, a highly urbanised city
+(Quezon City, whose offices are shared), and a municipality (Carmen, Bohol, a name used
+in several provinces). Check any of them with `npm run check -- --config=examples/deo.config.ts`.
+
+### What it cannot do yet
+
+The API places DPWH money by **office**, and finds other lines by **name**. It does not
+yet say which city or municipality a project is in. A municipality portal therefore
+relies on titles that spell the town out. The source workbench's location lens, which
+places lines by the place their title names, is being brought into budget.bettergov.ph;
+once the API serves it, a municipality scope can use it directly. See
+[docs/api.md](docs/api.md#gaps).
+
+## Rules this portal keeps
+
+These come from the API and the comparison behind it. A fork should keep them.
+
+- Amounts are integer pesos as published. A dash means "this document has no such
+  line", never zero.
+- The NEP and the House bill are two versions of one budget: they are **compared, never
+  added**.
+- "In the House bill only" and "In the NEP only" are **candidates**: leads to check,
+  not confirmed insertions or deletions. Unconfirmed matches are flagged on every row.
+- A DPWH office that serves several districts (Tier B) is shown whole; its money is
+  never split between them.
+- The disclaimers are printed from the API response itself, so their wording cannot
+  drift from budget.bettergov.ph. Keep them on every page that shows figures.
+- Nothing is hidden silently: hand exclusions are listed, with reasons, on the About
+  page.
+
+## Citizen reports
+
+Reports about a project will go to one central service on budget.bettergov.ph for every
+portal (not built yet). A portal does not collect reports itself; it links to the central
+form with the project's reference. Until the service opens, `reporting.enabled` stays
+`false` and the project page says reporting is coming. The link contract is in
+[docs/reporting.md](docs/reporting.md).
+
+## Deploying
+
+`npm run build` writes static files to `dist/`. Each host needs one rule: unknown paths
+serve `index.html`, because the routes are client-side. That rule is already in the repo
+for each:
+
+| Host | How |
+| --- | --- |
+| Cloudflare Workers | `npm run deploy:cloudflare` (uses `wrangler.jsonc`; rename `name` first) |
+| Vercel | Import the repo; `vercel.json` has the build and the rewrite |
+| Netlify | Import the repo; `netlify.toml` has the build and the redirect |
+| Anything else | Serve `dist/` and send unknown paths to `/index.html` |
+
+Set `siteUrl` in the config for link previews. Set `VITE_API_BASE` only to point at a
+different API host (a staging copy, for example). More in [docs/deploy.md](docs/deploy.md).
+
+## Stack
+
+React 19, TypeScript, Vite and React Router: the same as budget.bettergov.ph, with its
+type (Figtree, Inter, JetBrains Mono) and colours (`src/styles/theme.css`). Three runtime
+dependencies, about 95 KB gzipped.
+
+```text
+portal.config.ts      the one file a fork edits
+src/config.ts         what the config means, and its checks
+src/api/              the API client and the response types it reads
+src/lib/scope.ts      config → the portal's projects, each with its reasons
+src/pages/            Projects (with offices and their districts), Project, About
+src/styles/           theme tokens and layout
+scripts/setup.ts      npm run setup
+scripts/check.ts      npm run check (exits non-zero on a broken config; use it in CI)
+examples/             a DEO, a city, a municipality
+```
+
+## Licence
+
+MIT. The budget documents are works of the Philippine government; the comparison data
+carries the notices printed on every page.
