@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Disclaimer, Overview } from '../api/types';
 import { shortNameOf } from '../config';
@@ -7,6 +8,8 @@ import { count, date, plural } from '../lib/format';
 import { SOURCE_CODE_URL } from '../lib/links';
 import { usePortal } from '../lib/portal-context';
 import type { ScopeResult } from '../lib/scope';
+import { departmentShort, loadGaa, type GaaResult } from '../lib/gaa';
+import type { Async } from '../lib/portal-context';
 import { useTitle } from '../lib/use-title';
 
 /** The API's `rules`, in words for readers rather than developers. */
@@ -84,8 +87,10 @@ function AboutView({ scope, overview }: { scope: ScopeResult; overview: Overview
         </p>
       </section>
 
+      <GaaQuestions />
+
       <section className="section" aria-labelledby="x-h">
-        <h2 id="x-h" className="section-h">Removed by hand: {count(scope.excluded.length)}</h2>
+        <h2 id="x-h" className="section-h">2027 lines removed by hand: {count(scope.excluded.length)}</h2>
         {scope.excluded.length === 0 ? (
           <p>None. Every line the questions return is shown.</p>
         ) : (
@@ -154,5 +159,72 @@ function AboutView({ scope, overview }: { scope: ScopeResult; overview: Overview
         </p>
       </section>
     </>
+  );
+}
+
+/** The 2020–2026 searches, published like the 2027 ones: every department with a match, and how to check it. */
+function GaaQuestions() {
+  const { client, config } = usePortal();
+  const places = config.scope.places ?? [];
+  const [state, setState] = useState<Async<GaaResult>>({ status: 'loading' });
+  useEffect(() => {
+    if (!places.length) return;
+    let live = true;
+    loadGaa(client, config).then(
+      (value) => live && setState({ status: 'ready', value }),
+      (error) => live && setState({ status: 'error', error: error instanceof Error ? error : new Error(String(error)) }),
+    );
+    return () => {
+      live = false;
+    };
+  }, [client, config, places.length]);
+
+  return (
+    <section className="section" aria-labelledby="g-h">
+      <h2 id="g-h" className="section-h">The questions for the 2020–2026 budgets</h2>
+      {!places.length ? (
+        <p>None: this portal names no place, and the enacted budgets list projects by name, not by office.</p>
+      ) : state.status === 'loading' ? (
+        <p className="state" role="status"><span className="spinner" aria-hidden="true" /> Loading the searches…</p>
+      ) : state.status === 'error' ? (
+        <p className="state state-error">Could not load the searches: {state.error.message}</p>
+      ) : (
+        <>
+          <div className="table queries" role="table" aria-label="Searches of the enacted budgets">
+            <div className="tr th" role="row">
+              <span role="columnheader">Programs whose name has…</span>
+              <span role="columnheader">Department</span>
+              <span role="columnheader" className="r">Found</span>
+              <span role="columnheader" className="r">Loaded</span>
+              <span role="columnheader" className="r">Check it</span>
+            </div>
+            {state.value.queries.map((q) => (
+              <div className="tr" role="row" key={q.place + q.department_id}>
+                <span role="cell"><strong>{q.q}</strong></span>
+                <span role="cell">{departmentShort(q.department)}</span>
+                <span role="cell" className="r num">{count(q.matched)}</span>
+                <span role="cell" className="r num">{count(q.fetched)}</span>
+                <span role="cell" className="r"><External href={q.api}>API</External></span>
+              </div>
+            ))}
+          </div>
+          <p className="fine">
+            Every one of the {count(state.value.searched)} departments in the GAA was searched for each place; those not listed
+            matched nothing. A program found by two places is shown once.
+            {state.value.excluded.length > 0 ? ` ${plural(state.value.excluded.length, 'program')} removed by hand:` : ' None removed by hand.'}
+          </p>
+          {state.value.excluded.length > 0 && (
+            <ul className="plain-list">
+              {state.value.excluded.map(({ exclusion, row }) => (
+                <li key={exclusion.key}>
+                  {row ? row.name : <code>{exclusion.key}</code>}
+                  <span className="muted"> — {exclusion.reason}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </section>
   );
 }

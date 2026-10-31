@@ -38,7 +38,7 @@ export interface PlaceQuery {
 
 /** A line the maintainer removed from the portal. Every exclusion is published on the About page. */
 export interface Exclusion {
-  /** `<dataset>:<id>`, e.g. "dpwh:house-reading:848". */
+  /** `<dataset>:<id>` for a 2027 line ("dpwh:house-reading:848"), or `gaa:<family key>` for a 2020–2026 program. */
   key: string;
   /** Why, in a sentence a reader can check. */
   reason: string;
@@ -72,7 +72,10 @@ export interface PortalConfig {
      * each office is in the portal. `npm run setup` finds the names.
      */
     offices?: string[];
-    /** Places whose name in a project's title brings it in, across the four programs. */
+    /**
+     * Places whose name in a project's title brings it in: the four 2027
+     * programs, and every department's programs in the 2020–2026 budgets.
+     */
     places?: PlaceQuery[];
     /** Legislative districts to show cards for: ids such as "leg:bohol:1st". */
     districts?: string[];
@@ -116,7 +119,7 @@ export function configProblems(config: PortalConfig): string[] {
     if (!d.startsWith('leg:')) problems.push(`district "${d}" should be an id such as "leg:bohol:1st".`);
   }
   for (const e of exclude) {
-    if (!/^(dpwh|fmr|hfep|nia):.+/.test(e.key)) problems.push(`exclusion "${e.key}" should be "<program>:<id>".`);
+    if (!/^(dpwh|fmr|hfep|nia|gaa):.+/.test(e.key)) problems.push(`exclusion "${e.key}" should be "<program>:<id>" (2027) or "gaa:<family key>" (2020–2026).`);
     if (!e.reason.trim()) problems.push(`exclusion "${e.key}" needs a reason; readers see it.`);
   }
   return problems;

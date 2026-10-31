@@ -258,3 +258,41 @@ export interface DistrictList {
   total: number;
   districts: DistrictCard[];
 }
+
+// ---------------------------------------------------------------------------
+// GAA FY2020–2026 (/api/v1/gaa): the enacted budgets
+// ---------------------------------------------------------------------------
+
+/** The enacted years the API covers. */
+export const GAA_YEARS = [2020, 2021, 2022, 2023, 2024, 2025, 2026] as const;
+export type GaaYear = (typeof GAA_YEARS)[number];
+
+/** Per year: how many lines carry the name, and their appropriation in pesos. */
+export type GaaYears = Record<string, { count: number; amount: number }>;
+
+/** GAA responses carry no disclaimers, and list pages a cursor. */
+export interface GaaEnvelope<T> {
+  meta: { dataset: 'gaa'; years: number[]; currency: 'PHP'; scale: 'pesos'; matched?: number; matched_amount?: number; [key: string]: unknown };
+  data: T;
+  next_cursor?: string | null;
+}
+
+export interface GaaDepartment {
+  id: string;
+  slug: string;
+  description: string;
+  years: GaaYears;
+}
+
+/**
+ * A program, activity or project "family": the same name in one agency across
+ * the years. A renamed project is a different family.
+ */
+export interface GaaProgram {
+  department_id: string;
+  agency_id: string;
+  fam_key: string;
+  name: string;
+  ids_count: number;
+  years: GaaYears;
+}

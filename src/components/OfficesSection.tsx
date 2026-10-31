@@ -176,7 +176,8 @@ function Office({ view }: { view: OfficeView }) {
         Named projects{f ? <>: {count(f.nep_records)} in the NEP, {count(f.hgab3_records)} in the House bill</> : null}.
         {wholeNep != null && <> The whole office in the NEP: {php(wholeNep)}.</>}
         {unconfirmed > 0 && <> Includes {plural(unconfirmed, 'unconfirmed match', 'unconfirmed matches')} ({php(f?.annotations?.unconfirmed_php)}).</>}
-        {held > 0 && <> {plural(held, 'line')} whose two versions name different offices {held === 1 ? 'is' : 'are'} not in these figures.</>}
+        {held > 0 && <> {plural(held, 'line')} whose two versions name different offices {held === 1 ? 'is' : 'are'} not in these figures.</>}{' '}
+        <Link to={`/gaa#${office.id}`}>Its budget each year since 2020 →</Link>
       </p>
 
       <div className="ocard-districts">

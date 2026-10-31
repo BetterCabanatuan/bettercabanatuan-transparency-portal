@@ -8,8 +8,9 @@ import { NATIONAL_URL, SOURCE_CODE_URL } from '../lib/links';
 const BETTERGOV_LOGO = '/brand/bettergov-horizontal-primary.png';
 
 const NAV = [
-  { to: '/', hash: '', label: 'Projects' },
+  { to: '/', hash: '', label: '2027 projects' },
   { to: '/', hash: '#offices', label: 'Offices and districts' },
+  { to: '/gaa', hash: '', label: 'Budgets 2020–2026' },
   { to: '/about', hash: '', label: 'About the data' },
 ];
 
@@ -53,7 +54,7 @@ export function Masthead() {
           {config.logo && <img src={config.logo} alt="" className="masthead-logo" />}
           <span>
             <span className="masthead-kicker">
-              {KIND_LABELS[config.kind]} <span aria-hidden="true">·</span> FY 2027 budget
+              {KIND_LABELS[config.kind]} <span aria-hidden="true">·</span> Budgets 2020–2027
             </span>
             <span className="masthead-name">{config.name}</span>
           </span>

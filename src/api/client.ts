@@ -7,13 +7,17 @@
  */
 import type { DatasetKey } from '../config';
 import type {
-  DistrictCard, DistrictList, Envelope, Overview, ProjectDetail, ProjectList, ProjectRow,
+  DistrictCard, DistrictList, Envelope, GaaDepartment, GaaEnvelope, GaaProgram, Overview, ProjectDetail, ProjectList, ProjectRow,
 } from './types';
 
 /** The API's page-size ceiling for project lists. */
 export const PAGE_SIZE = 200;
 /** A place query that matches more than this is too broad to be one LGU's; the portal says so. */
 export const MAX_ROWS_PER_QUERY = 4000;
+/** GAA program lists page up to 500 rows. */
+export const GAA_PAGE_SIZE = 500;
+/** A place matching more GAA program families than this in one department is cut there, and said so. */
+export const MAX_GAA_PROGRAMS = 6000;
 
 export type Params = Record<string, string | number | undefined>;
 
@@ -29,6 +33,8 @@ export class ApiError extends Error {
 
 export interface Client {
   base: string;
+  /** Any JSON route; paths not starting with /api/ are under /api/v1/hgab/2027. */
+  json<T>(path: string, params?: Params): Promise<T>;
   get<T>(path: string, params?: Params): Promise<Envelope<T>>;
   overview(): Promise<Envelope<Overview>>;
   /** Every row matching the filters, fetched page by page. */
@@ -38,6 +44,10 @@ export interface Client {
   districts(params?: Params): Promise<Envelope<DistrictList>>;
   /** Absolute URL for an API path, for "see the data" links. */
   href(path: string, params?: Params): string;
+  /** GAA FY2020–2026: the departments. */
+  gaaDepartments(): Promise<GaaEnvelope<GaaDepartment[]>>;
+  /** GAA FY2020–2026: every program family in one department whose name matches q, all years, page by page. */
+  gaaPrograms(departmentId: string, q: string): Promise<{ first: GaaEnvelope<GaaProgram[]>; rows: GaaProgram[]; truncated: boolean }>;
 }
 
 const ROOT = '/api/v1/hgab/2027';
@@ -54,9 +64,9 @@ export function createClient(base: string): Client {
     return url.toString();
   };
 
-  function get<T>(path: string, params: Params = {}): Promise<Envelope<T>> {
+  function json<T>(path: string, params: Params = {}): Promise<T> {
     const url = href(path, params);
-    let hit = cache.get(url) as Promise<Envelope<T>> | undefined;
+    let hit = cache.get(url) as Promise<T> | undefined;
     if (!hit) {
       hit = (async () => {
         const res = await fetch(url, { headers: { accept: 'application/json' } });
@@ -70,13 +80,29 @@ export function createClient(base: string): Client {
           }
           throw new ApiError(res.status, url, message);
         }
-        return (await res.json()) as Envelope<T>;
+        return (await res.json()) as T;
       })();
       // A failed request must not stick: drop it so a retry fetches again.
       hit.catch(() => cache.delete(url));
       cache.set(url, hit);
     }
     return hit;
+  }
+
+  const get = <T,>(path: string, params: Params = {}) => json<Envelope<T>>(path, params);
+
+  async function gaaPrograms(departmentId: string, q: string) {
+    const path = `/api/v1/gaa/departments/${departmentId}/programs`;
+    const first = await json<GaaEnvelope<GaaProgram[]>>(path, { q, limit: GAA_PAGE_SIZE });
+    const rows = [...first.data];
+    let cursor = first.next_cursor;
+    // The cursor chains pages, so they are fetched one after another.
+    while (cursor && rows.length < MAX_GAA_PROGRAMS) {
+      const page = await json<GaaEnvelope<GaaProgram[]>>(path, { q, limit: GAA_PAGE_SIZE, cursor });
+      rows.push(...page.data);
+      cursor = page.next_cursor;
+    }
+    return { first, rows, truncated: Boolean(cursor) };
   }
 
   async function allProjects(dataset: DatasetKey, filters: Params) {
@@ -97,8 +123,11 @@ export function createClient(base: string): Client {
 
   return {
     base: host,
+    json,
     get,
     href,
+    gaaDepartments: () => json<GaaEnvelope<GaaDepartment[]>>('/api/v1/gaa/departments'),
+    gaaPrograms,
     overview: () => get<Overview>(''),
     allProjects,
     project: (dataset, id) => get<ProjectDetail>(`/datasets/${dataset}/projects/${encodeURIComponent(id)}`),

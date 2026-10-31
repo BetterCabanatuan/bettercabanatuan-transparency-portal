@@ -12,8 +12,11 @@ Everything comes from the public, read-only, CORS-open BetterGov.ph Budget API
 | `GET /api/v1/hgab/2027/datasets/{program}/projects/{id}` | One project: every version's amount and PDF page, match and reading labels, notes |
 | `GET /api/v1/hgab/2027/districts/{id}` | A district card: representative, offices, tiers, 2027 figures |
 | `GET /api/v1/hgab/2027/districts` | `npm run setup` only: every district and office, to find names and ids |
+| `GET /api/v1/gaa/departments` | The 38 GAA departments, to search each one |
+| `GET /api/v1/gaa/departments/{id}/programs?q=…` | Every program family in one department whose name has `q`, with its amount in each year 2020–2026; paged by `cursor`, 500 at a time |
+| `…/programs?q=…&year=…&limit=1` | `npm run check` only: `meta.matched_amount`, the API's own total for the search in that year, to reconcile against |
 
-Lists are paged at 200 rows; the client fetches every page (`allProjects` in
+The 2027 project lists are paged at 200 rows; the client fetches every page (`allProjects` in
 `src/api/client.ts`), four at a time. A query that matches more than 4,000 rows is cut
 there and `npm run check` fails, since no single place should match that many.
 
@@ -34,6 +37,25 @@ Every response carries `meta` (with `notice`, the source commit and build date) 
   readings).
 - `delta_php` is null when one version has no such line.
 
+## The enacted budgets (GAA, 2020–2026)
+
+- The GAA has no place or office filter. Places are found by name: every department's
+  `programs` list is searched with the place's `q` (`loadGaa` in `src/lib/gaa.ts`), every
+  page, and the results merged by `fam_key` (one name in one agency across the years).
+- **Use `programs`, not `/gaa/search`.** The search spans departments but returns at most
+  100 results with no paging; for a province, DPWH alone fills it and other departments
+  disappear.
+- **A year counts only where `amount > 0`.** The per-year `count` carries a project's
+  lines into later years at ₱0 (a 2020 access road in Ubay still counts two lines in
+  2026), so a count alone does not mean that year's GAA funds it.
+- `meta.matched` is the same for every `year`; `meta.matched_amount` is that year's
+  total. `npm run check` compares it with the sum of the rows, for every department and
+  year.
+- DPWH money **by office** per year is not in these routes (a DEO's lines are spread
+  across thousands of projects). It comes from each office's `years` on its district
+  page: GAA 2020–2026 for the whole office, the 2027 NEP for the whole office, and the
+  2027 House bill for named projects only.
+
 ## Gaps
 
 What a portal would use if the API had it, in order of value:
@@ -45,7 +67,10 @@ What a portal would use if the API had it, in order of value:
    city/municipality code per line. With
    `GET /api/v1/hgab/2027/places/{psgc}/projects` (or `?psgc=` on the projects list), a
    municipality scope would stop depending on title text.
-2. **A list of offices.** There is no `/offices` route; setup builds the list from
+2. **GAA lines by operating unit.** A filter such as
+   `/gaa/departments/18/objects?operating_unit=…` would list a DPWH office's own 2020–2026
+   lines, instead of only those whose name names the place.
+3. **A list of offices.** There is no `/offices` route; setup builds the list from
    `/districts` and reads the published name from each district page (one request per
    office).
-3. **The citizen reporting service.** See [reporting.md](reporting.md).
+4. **The citizen reporting service.** See [reporting.md](reporting.md).
