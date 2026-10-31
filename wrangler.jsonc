@@ -4,6 +4,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "bettercabanatuan-transparency-portal",
   "compatibility_date": "2026-10-01",
+  "routes": [
+    { "pattern": "transparency.bettercabanatuan.org", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
     // Client-side routes (/districts, /projects/...) serve index.html.

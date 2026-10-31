@@ -10,6 +10,7 @@ export default defineConfig({
   name: "Cabanatuan City",
   shortName: "Cabanatuan City",
   logo: "/brand/bettercabanatuan-logo.svg",
+  siteUrl: "https://transparency.bettercabanatuan.org",
   operator: {
     name: "Better Cabanatuan"
   },
