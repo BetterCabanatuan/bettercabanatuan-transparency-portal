@@ -16,13 +16,40 @@ export default defineConfig({
   scope: {
     offices: [],
     places: [
-      {
-        label: "Cabanatuan City",
-        q: "Cabanatuan City"
-      }
+      { label: "Cabanatuan", q: "Cabanatuan" },
+      // The city's own hospital: its title does not name the city.
+      { label: "Paulino J. Garcia hospital", q: "Paulino J. Garcia", datasets: ["hfep"] },
+      // A GAA misspelling of the city (Barangay Mayapyap, "Canatuan"); 2020-2026 only.
+      { label: "Canatuan, Nueva Ecija", q: "Canatuan, Nueva Ecija", datasets: [] }
     ],
     districts: ["leg:nueva-ecija:3rd"],
-    exclude: []
+    exclude: [
+      { key: "gaa:18-001|installationapplication of road safety facilities roadway lighting along cabanatuan citycarmen rd k0132  050  k0136  190 k0137  000  k0138  575", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|central luzon link expressway cllex phase i la paz tarlac to cabanatuan city jica ph  p249", reason: "An expressway from La Paz, Tarlac to Cabanatuan City: a project across provinces, not a city project." },
+      { key: "gaa:18-001|cabanatuan city  carmen rd  k0124  000  k0125  808", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan city  carmen rd  k0127  730  k0127  902 k0128  000  k0128  062", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan city  carmen rd  k0129    976   k0129    228", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan city  carmen rd  k0129  775  k0130  508 k0131  000  k0131  050 k0132  000  k0133  000 k0133  750  k0133  980 k0136  000  k0136  350 k0136  630  k0137  310 k0137  450  k0137 710 k0139  1014  k0140  471", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan city  carmen rd  k0130  508  k0131  000 k0131  050  k0132  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan city  carmen rd  k0133  980  k0134  114 k0135  599  k0135  941 k0136  350  k0136  630 k0137  310  k0137  450 k0137  710  k0138  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0123  000  k0124  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0123  909  k0123  835 k0123  681  k0123  000 k0123  340  k0123  602 k0123  660  k0123  688 k0123  790  k0123  889 k0125  808  k0126  000 k0127  140  k0127  185 k0127  351  k0127  705", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0123908  k0123040 k0127208  k0127705", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0125  00000  k0126  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0126  000  k0126  1005", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0126  000  k0126  361", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0127  208  k0128  062", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0129  000  k0129  930 k0131  050  k0132  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0129  1003  k0129  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0130  508  k0130  795", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|cabanatuan citycarmen rd  k0130  795  k0131  000", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road, from K123 on, runs past the city." },
+      { key: "gaa:18-001|regionwide  nationwide  roads and bridges  feasibility studies preliminary and detailed engineering economic analysis technical studies traffic impact assessment  region iii  prefeasibility study of the cabanatuan city  palayan city bypass road", reason: "A Region III study that names Cabanatuan along a route; it is not a project in the city." },
+      { key: "gaa:18-001|regionwidenationwide  roads and bridges  conduct of feasibility studies preliminary and detailed engineering economic analysis technical studies traffic impact assessment  region iii  san miguelcabanatuan road", reason: "A Region III study that names Cabanatuan along a route; it is not a project in the city." },
+      { key: "dpwh:house-reading:660", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road is listed under the Nueva Ecija 1st District Engineering Office, not the office that serves the city." },
+      { key: "dpwh:house-reading:1125", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road is listed under the Nueva Ecija 1st District Engineering Office, not the office that serves the city." },
+      { key: "dpwh:house-reading:2593", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road is listed under the Nueva Ecija 1st District Engineering Office, not the office that serves the city." },
+      { key: "dpwh:house-reading:1567", reason: "Named for the route, not the place: this stretch of the Cabanatuan City-Carmen Road is listed under the Nueva Ecija 1st District Engineering Office, not the office that serves the city." }
+    ]
   },
   reporting: {
     enabled: false
