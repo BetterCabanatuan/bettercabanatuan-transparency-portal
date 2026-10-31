@@ -5,6 +5,10 @@ LGU (province, city or municipality) or one DPWH district engineering office: wh
 NEP gave it, what the House bill (House Bill 10858) gives it, what was added or dropped,
 and the page of the source document each figure is on.
 
+<p align="center">
+  <img src="docs/poster/create-your-own-transparency-portal-1080x1080.png" alt="Create your own transparency portal: for your LGU or DPWH district office. A sample portal for the Province of Bohol, and three steps: fork, run npm run setup, deploy." width="540">
+</p>
+
 It has no backend and no database. Everything comes from the public
 [BetterGov.ph Budget API](https://budget.bettergov.ph/docs), the same data behind
 [budget.bettergov.ph](https://budget.bettergov.ph/hgab/2027/overview). Build it once and
@@ -115,11 +119,24 @@ for each:
 Set `siteUrl` in the config for link previews. Set `VITE_API_BASE` only to point at a
 different API host (a staging copy, for example). More in [docs/deploy.md](docs/deploy.md).
 
+## Poster
+
+"Create your own transparency portal", for sharing: a
+[feed post (1080×1350)](https://budget-assets.bettergov.ph/hgab/2027/campaign/create-your-own-transparency-portal-1080x1350.png)
+and a [square post (1080×1080)](https://budget-assets.bettergov.ph/hgab/2027/campaign/create-your-own-transparency-portal-1080x1080.png),
+also in [`docs/poster/`](docs/poster) and the
+[BetterGov campaign gallery](https://budget-assets.bettergov.ph/hgab/2027/campaign/index.html).
+
+The sample image is the real portal, screenshotted when the poster is built, and the background lists every DPWH
+district engineering office. To rebuild it after a design change, run the portal (`npm run dev`) and then
+`npm run build:poster`. It needs Playwright's Chromium (`npx playwright-core install chromium`).
+
 ## Stack
 
 React 19, TypeScript, Vite and React Router: the same as budget.bettergov.ph, with its
 type (Figtree, Inter, JetBrains Mono) and colours (`src/styles/theme.css`). Three runtime
-dependencies, about 95 KB gzipped.
+dependencies, about 95 KB gzipped. (`playwright-core`, a development dependency, is used only to
+build the poster.)
 
 ```text
 portal.config.ts      the one file a fork edits
@@ -130,6 +147,7 @@ src/pages/            Projects (with offices and their districts), Project, Abou
 src/styles/           theme tokens and layout
 scripts/setup.ts      npm run setup
 scripts/check.ts      npm run check (exits non-zero on a broken config; use it in CI)
+scripts/build-poster.ts  npm run build:poster → docs/poster/
 examples/             a DEO, a city, a municipality
 ```
 
