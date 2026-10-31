@@ -21,6 +21,16 @@ export function Masthead() {
     [],
   );
   return (
+    <>
+    {config.buildYourOwnStrip !== false && (
+      // Above the masthead, so it scrolls away; a plain link to the source.
+      <a className="build-strip" href={SOURCE_CODE_URL} target="_blank" rel="noopener">
+        <span className="build-strip-title">Create your own transparency portal</span>
+        <span className="build-strip-url">
+          {SOURCE_CODE_URL.replace(/^https:\/\//, '')} <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    )}
     <header className="masthead">
       <div className="masthead-top">
         <div className="page masthead-top-inner">
@@ -73,6 +83,7 @@ export function Masthead() {
         </div>
       </nav>
     </header>
+    </>
   );
 }
 

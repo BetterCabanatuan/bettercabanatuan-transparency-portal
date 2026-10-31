@@ -40,6 +40,11 @@ const SITE = (args.site ?? 'http://127.0.0.1:5132').replace(/\/+$/, '');
 /** A project shown on the phone: one with the same amount in both versions, so the poster singles out no change. */
 const PHONE_PROJECT = args.project ?? 'dpwh/house-reading%3A5256';
 const REPO = 'github.com/bettergovph/transparency-portal';
+/** The sample's address, shown in the browser bar when the config has one. */
+const SAMPLE_HOST = config.siteUrl ? new URL(config.siteUrl).host : null;
+/** GitHub's mark (octicon mark-github), white, beside the repository address. */
+const GITHUB_MARK =
+  '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
 
 const api = createClient(env.VITE_API_BASE || config.api || DEFAULT_API);
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -167,6 +172,11 @@ function html(f: Format, d: Awaited<ReturnType<typeof loadData>>, shots: { deskt
                 font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: ${1.6 * u}px; color: #fff; background: var(--blue); }
   .steps code { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 0.9em; background: #e7e1d5; padding: 0 ${0.3 * u}px; }
 
+  .cta { position: absolute; left: ${4.6 * u}px; right: ${4.6 * u}px; }
+  .cta span { display: flex; align-items: center; justify-content: center; gap: ${1.3 * u}px; width: 100%; white-space: nowrap;
+              font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: ${(square ? 2.85 : 3.15) * u}px; line-height: 1; letter-spacing: -0.01em;
+              color: #fff; background: var(--blue); padding: ${(square ? 1.05 : 1.25) * u}px ${1.5 * u}px; }
+  .cta svg { width: 1.15em; height: 1.15em; flex-shrink: 0; }
   .foot { position: absolute; left: 0; right: 0; bottom: 0; height: ${foot}px; background: #111; color: #f3eee4;
           padding: ${(square ? 2 : 2.4) * u}px ${4.6 * u}px; display: grid; grid-template-columns: ${17 * u}px 1fr; column-gap: ${3.4 * u}px; align-items: start;
           font-family: Inter, sans-serif; }
@@ -177,7 +187,7 @@ function html(f: Format, d: Awaited<ReturnType<typeof loadData>>, shots: { deskt
 
   const titleSize = (square ? 10.4 : 12.6) * u;
   const steps = [
-    square ? 'Fork the code on GitHub, at the link below.' : `Fork <code>${REPO.replace('github.com/', '')}</code>.`,
+    'Fork the code on GitHub, at the link below.',
     `Run <code>npm run setup</code> and pick your province, city, town or district engineering office.`,
     `Deploy it to Cloudflare, Vercel or Netlify. No server, no database.`,
   ];
@@ -192,7 +202,7 @@ function html(f: Format, d: Awaited<ReturnType<typeof loadData>>, shots: { deskt
 <div class="poster">
   <div class="wall" id="wall"></div>
   <div class="head" id="head">
-    <div class="kick"><span>BetterGov.PH · Open source</span><span>FY 2027 budget</span></div>
+    <div class="kick"><span>BetterGov.PH · Open source on GitHub</span><span>FY 2027 budget</span></div>
     <h1 class="title" style="font-size:${titleSize}px"><span>Create your own</span><span class="blue">transparency portal</span></h1>
     <div class="strap"><span>For your LGU or DPWH district office</span></div>
     ${square ? '' : `<p class="sub"><span>Show every 2027 project in your area: what the NEP gave it, what the House bill gives it, and the page in the budget documents for each figure.</span></p>`}
@@ -200,7 +210,7 @@ function html(f: Format, d: Awaited<ReturnType<typeof loadData>>, shots: { deskt
   <div class="shots" id="shots">
     <div class="browser">
       <span class="tab">Sample · ${esc(config.name)} · ${count(d.projects)} projects</span>
-      <div class="bar"><i></i><i></i><i></i><span>${esc(name)} · FY 2027 budget projects</span></div>
+      <div class="bar"><i></i><i></i><i></i><span>${esc(SAMPLE_HOST ?? `${name} · FY 2027 budget projects`)}</span></div>
       <img src="${shots.desktop}" alt="">
     </div>
     <div class="phone" id="phone"><img src="${shots.mobile}" alt=""></div>
@@ -209,9 +219,10 @@ function html(f: Format, d: Awaited<ReturnType<typeof loadData>>, shots: { deskt
     <span class="tab">Three steps</span>
     <ol>${steps.map((s, i) => `<li><b>${i + 1}</b><span>${s}</span></li>`).join('')}</ol>
   </div>
+  <div class="cta" id="cta"><span>${GITHUB_MARK}${REPO}</span></div>
   <div class="foot">
     <img src="${LOGO}" alt="BetterGov.PH">
-    <div><p class="url">${REPO}</p><p class="fine">${fine}</p></div>
+    <div><p class="url">${SAMPLE_HOST ? `Sample: ${esc(SAMPLE_HOST)}` : REPO}</p><p class="fine">${fine}</p></div>
   </div>
 </div></body></html>`;
 }
@@ -241,23 +252,43 @@ async function main() {
         const head = document.getElementById('head')!;
         const shots = document.getElementById('shots')!;
         const steps = document.getElementById('steps')!;
+        const cta = document.getElementById('cta')!;
         const phone = document.getElementById('phone')!;
+        const browser = shots.querySelector('.browser') as HTMLElement;
         const headBottom = head.getBoundingClientRect().bottom;
         const stepsH = steps.getBoundingClientRect().height;
-        // The phone overlaps the browser's lower right corner and hangs 2 units below it.
-        const browserH = shots.querySelector('.browser')!.getBoundingClientRect().height;
-        const phoneH = phone.getBoundingClientRect().height;
-        phone.style.top = `${browserH - phoneH + 2 * u}px`;
-        const shotsH = Math.max(browserH + u, browserH + 2 * u, phoneH);
-        // The "Sample" label sits above the browser frame; leave room for it.
+        const ctaH = cta.getBoundingClientRect().height;
         const tabH = (shots.querySelector('.tab') as HTMLElement).getBoundingClientRect().height;
-        const free = H - foot - headBottom - tabH - stepsH - shotsH;
-        const gap = Math.max(1.4 * u, free / 3);
-        const top = headBottom + gap * 1.2 + tabH;
-        shots.style.top = `${top}px`;
+
+        // The screenshot takes whatever height is left once every gap has its minimum:
+        // its width follows (the capture is 1280 × 720), the phone a fixed share of it.
+        const minGap = 1.4 * u;
+        const chrome = browser.getBoundingClientRect().height - browser.querySelector('img')!.getBoundingClientRect().height;
+        const hang = 2 * u; // the phone hangs this far below the browser
+        const room = H - foot - headBottom - tabH - stepsH - ctaH - 4 * minGap - hang;
+        const maxW = (square ? 62 : 74) * u;
+        const width = Math.min(maxW, ((room - chrome) * 1280) / 720);
+        browser.style.width = `${width}px`;
+        phone.style.width = `${width * (square ? 0.34 : 0.31)}px`;
+
+        // The phone overlaps the browser's lower right corner.
+        const browserH = browser.getBoundingClientRect().height;
+        const phoneH = phone.getBoundingClientRect().height;
+        phone.style.top = `${browserH - phoneH + hang}px`;
+        const shotsH = Math.max(browserH + hang, phoneH);
+
+        // Spread what is left over the four gaps: head, sample, steps, GitHub band, footer.
+        const free = H - foot - headBottom - tabH - shotsH - stepsH - ctaH;
+        const gap = Math.max(minGap * 0.8, free / 4);
+        let y = headBottom + gap + tabH;
+        shots.style.top = `${y}px`;
         shots.style.height = `${shotsH}px`;
-        steps.style.top = `${top + shotsH + gap * 0.9}px`;
-        return { headBottom, free, stepsBottom: steps.getBoundingClientRect().bottom, footTop: H - foot };
+        y += shotsH + gap;
+        steps.style.top = `${y}px`;
+        y += stepsH + gap;
+        cta.style.top = `${y}px`;
+        const stepsBottom = cta.getBoundingClientRect().bottom;
+        return { headBottom, free, stepsBottom, footTop: H - foot, width };
       }, { W: f.W, H: f.H, square: f.W === f.H });
 
       // The wall: every office, at the largest size that fits.
@@ -278,9 +309,9 @@ async function main() {
       const png = join(OUT, `create-your-own-transparency-portal-${f.key}.png`);
       await page.screenshot({ path: png });
       await page.close();
-      console.log(`${f.key}: head ends ${Math.round(lay.headBottom)}, steps end ${Math.round(lay.stepsBottom)} / footer ${Math.round(lay.footTop)}, wall ${data.offices} offices at ${font.toFixed(1)}px → ${png}`);
+      console.log(`${f.key}: head ends ${Math.round(lay.headBottom)}, sample ${Math.round(lay.width)}px wide, GitHub band ends ${Math.round(lay.stepsBottom)} / footer ${Math.round(lay.footTop)}, wall ${data.offices} offices at ${font.toFixed(1)}px → ${png}`);
       if (lay.stepsBottom > lay.footTop) {
-        console.error(`${f.key}: the steps run into the footer (${Math.round(lay.stepsBottom - lay.footTop)}px); tighten the layout.`);
+        console.error(`${f.key}: the GitHub band runs into the footer (${Math.round(lay.stepsBottom - lay.footTop)}px); tighten the layout.`);
         exit(1);
       }
     }

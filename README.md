@@ -9,6 +9,9 @@ and the page of the source document each figure is on.
   <img src="docs/poster/create-your-own-transparency-portal-1080x1080.png" alt="Create your own transparency portal: for your LGU or DPWH district office. A sample portal for the Province of Bohol, and three steps: fork, run npm run setup, deploy." width="540">
 </p>
 
+**See a sample:** [transparency-portal.bettergov.workers.dev](https://transparency-portal.bettergov.workers.dev),
+the Province of Bohol, built from this repository as it is.
+
 It has no backend and no database. Everything comes from the public
 [BetterGov.ph Budget API](https://budget.bettergov.ph/docs), the same data behind
 [budget.bettergov.ph](https://budget.bettergov.ph/hgab/2027/overview). Build it once and
@@ -122,8 +125,8 @@ different API host (a staging copy, for example). More in [docs/deploy.md](docs/
 ## Poster
 
 "Create your own transparency portal", for sharing: a
-[feed post (1080×1350)](https://budget-assets.bettergov.ph/hgab/2027/campaign/create-your-own-transparency-portal-1080x1350.png)
-and a [square post (1080×1080)](https://budget-assets.bettergov.ph/hgab/2027/campaign/create-your-own-transparency-portal-1080x1080.png),
+[feed post (1080×1350)](https://budget-assets.bettergov.ph/hgab/2027/campaign/create-your-own-transparency-portal-1080x1350.png?v=222d351a)
+and a [square post (1080×1080)](https://budget-assets.bettergov.ph/hgab/2027/campaign/create-your-own-transparency-portal-1080x1080.png?v=9689903f),
 also in [`docs/poster/`](docs/poster) and the
 [BetterGov campaign gallery](https://budget-assets.bettergov.ph/hgab/2027/campaign/index.html).
 

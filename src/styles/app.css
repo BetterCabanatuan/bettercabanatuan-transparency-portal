@@ -15,6 +15,23 @@
 .strong { font-weight: 600; }
 .r { text-align: right; }
 
+/* ---------- "Create your own" strip (above the masthead) ---------- */
+.build-strip {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 9px var(--gutter);
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+}
+.build-strip:hover { background: var(--accent-deep); color: #fff; }
+.build-strip-title { font-family: var(--font-hero); font-weight: 700; font-size: 14px; letter-spacing: 0.01em; }
+.build-strip-url { font-family: var(--font-mono); font-weight: 500; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, 0.55); }
+
 /* ---------- Masthead ---------- */
 .masthead { background: var(--paper); }
 .masthead-top { border-bottom: 1px solid var(--rule-soft); font-family: var(--font-hero); font-size: 12px; font-weight: 600; }

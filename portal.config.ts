@@ -17,6 +17,8 @@ export default defineConfig({
   name: 'Province of Bohol',
   shortName: 'Bohol',
   operator: { name: 'BetterGov.ph', url: 'https://bettergov.ph' },
+  // Where this example is deployed. Change it (or remove it) in your fork.
+  siteUrl: 'https://transparency-portal.bettergov.workers.dev',
   scope: {
     offices: [
       'Bohol 1st District Engineering Office',

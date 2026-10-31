@@ -58,6 +58,11 @@ export interface PortalConfig {
   logo?: string;
   /** Canonical URL of this deployment, for link previews. */
   siteUrl?: string;
+  /**
+   * The blue "Create your own transparency portal" strip above the masthead,
+   * linking to the source on GitHub. On unless set to false.
+   */
+  buildYourOwnStrip?: boolean;
   /** Budget API host. Default https://budget.bettergov.ph. VITE_API_BASE overrides it. */
   api?: string;
   scope: {
