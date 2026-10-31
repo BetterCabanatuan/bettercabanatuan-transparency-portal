@@ -54,7 +54,7 @@ function AboutView({ scope, overview }: { scope: ScopeResult; overview: Overview
       >
         <p>
           Every figure comes from the BetterGov.ph Budget API, which sets the House bill against the NEP project by project.
-          This portal asks the API the questions below and shows every line it gets back.
+          This portal keeps a saved copy of the API’s answers to the questions below and shows every line they return. The data version at the foot of this page says how recent the source data is.
         </p>
       </PageHead>
 
@@ -83,7 +83,7 @@ function AboutView({ scope, overview }: { scope: ScopeResult; overview: Overview
         </div>
         <p className="fine">
           A line found by more than one question is shown once, with every reason. Searching by name finds titles that spell
-          the place out; a project whose title does not name it is found only through its DPWH office.
+          the place out; a project whose title does not name it {config.scope.offices?.length ? 'is found only through its DPWH office' : 'is not in this portal'}.
         </p>
       </section>
 

@@ -43,6 +43,11 @@
 .masthead-title { display: flex; align-items: center; gap: 14px; color: var(--ink); text-decoration: none; min-width: 0; }
 .masthead-title:hover { color: var(--ink); }
 .masthead-logo { height: 52px; width: auto; }
+.footer-notice { overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .masthead-logo { height: 38px; }
+  .masthead-main { flex-wrap: wrap; }
+}
 .masthead-kicker {
   display: block;
   font-family: var(--font-mono);

@@ -97,7 +97,7 @@ export default function Enacted() {
               <li>One row is one name in one agency across the years. A renamed or re-scoped project shows as a new row. A dash means no appropriation under that name that year.</li>
             </>
           )}
-          <li>A DPWH office’s yearly figure is its whole budget, as the GAA lists it under that office. An office that serves several districts is shown whole, never split.</li>
+          {config.scope.offices?.length ? <li>A DPWH office’s yearly figure is its whole budget, as the GAA lists it under that office. An office that serves several districts is shown whole, never split.</li> : null}
           <li>The 2027 figures are the NEP and the House bill, not law. They are shown beside the enacted years, never added to them.</li>
         </ul>
       </section>
@@ -111,7 +111,7 @@ export default function Enacted() {
 
 function OfficeHistories() {
   const { districts, config } = usePortal();
-  if (!config.scope.offices?.length && !config.scope.districts?.length) return null;
+  if (!config.scope.offices?.length) return null;
   return (
     <Await state={districts} what="DPWH office budgets">
       {(list) => <OfficeHistoryList list={list} />}

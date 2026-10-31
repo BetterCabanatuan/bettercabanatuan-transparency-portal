@@ -9,6 +9,7 @@
     "dev": "vite",
     "setup": "tsx scripts/setup.ts",
     "check": "tsx scripts/check.ts",
+    "snapshot": "tsx scripts/snapshot.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",

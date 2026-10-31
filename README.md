@@ -119,6 +119,13 @@ form with the project's reference. Until the service opens, `reporting.enabled` 
 `false` and the project page says reporting is coming. The link contract is in
 [docs/reporting.md](docs/reporting.md).
 
+## Stored data
+
+`npm run snapshot` saves every API response the portal needs to `public/snapshot/`, one
+JSON file per request. Commit that folder: visitors then read those files and never call
+the API, and a URL that is not stored falls back to the live API. The data stays as it
+was until you run the command again. A failed run leaves the old snapshot in place.
+
 ## Deploying
 
 `npm run build` writes static files to `dist/`. Each host needs one rule: unknown paths

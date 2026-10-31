@@ -3,7 +3,7 @@ import portalConfig from '../../portal.config';
 import { createClient } from '../api/client';
 import { DEFAULT_API } from '../config';
 import { PortalContext, type Async, type PortalState } from '../lib/portal-context';
-import { resolveScope, type ScopeResult } from '../lib/scope';
+import { districtIds, resolveScope } from '../lib/scope';
 
 const toError = (e: unknown) => (e instanceof Error ? e : new Error(String(e)));
 
@@ -21,17 +21,6 @@ function useSettled<T>(promise: Promise<T>): Async<T> {
     };
   }, [promise]);
   return state?.promise === promise ? state.value : { status: 'loading' };
-}
-
-/**
- * The districts to show: every district an in-scope DPWH office serves (so an
- * office is always shown with all of its districts), plus any the config names
- * (a place-only portal, such as a municipality, names its own).
- */
-function districtIds(scope: ScopeResult, configured: string[]): string[] {
-  const ids = new Set(configured);
-  for (const q of scope.queries) for (const o of q.officeLens?.offices ?? []) for (const d of o.districts) ids.add(d.id);
-  return [...ids];
 }
 
 export default function PortalProvider({ children }: { children: ReactNode }) {

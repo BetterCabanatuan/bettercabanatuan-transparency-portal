@@ -23,6 +23,9 @@ there and `npm run check` fails, since no single place should match that many.
 Every response carries `meta` (with `notice`, the source commit and build date) and
 `disclaimers`. The portal prints both as they come.
 
+A deployed portal reads these responses from `public/snapshot/`, written by
+`npm run snapshot`, rather than asking the API on every visit.
+
 ## Details worth knowing
 
 - The `office` filter matches the office **as the documents publish it**

@@ -126,6 +126,17 @@ function byHouseThenNep(a: ProjectRow, b: ProjectRow): number {
   return (b.house_php ?? -1) - (a.house_php ?? -1) || (b.nep_php ?? -1) - (a.nep_php ?? -1) || a.title.localeCompare(b.title);
 }
 
+/**
+ * The districts to show: every district an in-scope DPWH office serves (so an
+ * office is always shown with all of its districts), plus any the config names
+ * (a place-only portal, such as a municipality, names its own).
+ */
+export function districtIds(scope: ScopeResult, configured: string[]): string[] {
+  const ids = new Set(configured);
+  for (const q of scope.queries) for (const o of q.officeLens?.offices ?? []) for (const d of o.districts) ids.add(d.id);
+  return [...ids];
+}
+
 export interface Cell { rows: number; nep_php: number; house_php: number }
 
 export interface Summary {

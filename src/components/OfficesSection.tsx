@@ -45,7 +45,7 @@ export default function OfficesSection() {
   return (
     <section className="section" id="offices" aria-labelledby="offices-h">
       <Await state={districts} what="DPWH offices and districts">
-        {(list) => <Offices list={list} queries={queries} projects={projects} />}
+        {(list) => (config.scope.offices?.length ? <Offices list={list} queries={queries} projects={projects} /> : <Representatives list={list} />)}
       </Await>
     </section>
   );
@@ -83,6 +83,25 @@ function buildOffices(cards: DistrictCard[], queries: QueryReport[], projects: S
   // The portal's own offices first, then any that only serve a district it names.
   offices.sort((a, b) => Number(!a.query) - Number(!b.query) || a.printed.localeCompare(b.printed, 'en', { numeric: true }));
   return { offices, noOffice: cards.filter((c) => !c.offices.length) };
+}
+
+/** A scope with no offices: only the representatives, since an office's figures would cover more than the place. */
+function Representatives({ list }: { list: Envelope<DistrictCard>[] }) {
+  const cards = list.map((e) => e.data);
+  const note = list[0]?.meta.representatives_note as string | undefined;
+  const credits = [...new Set(cards.flatMap((c) => (c.representative?.portrait ? [`${c.representative.portrait.attribution} · ${c.representative.portrait.license}`] : [])))];
+  return (
+    <>
+      <h2 id="offices-h" className="section-h">{cards.length === 1 ? 'Representative' : 'Representatives'}</h2>
+      <p className="section-lede">Shown holding the seat in the 20th Congress.{note && <> {note}</>}</p>
+      <div className="ocard-districts">
+        <ul>
+          {cards.map((c) => <District key={c.id} row={{ id: c.id, label: c.label, card: c, alsoServedBy: [] }} />)}
+        </ul>
+      </div>
+      {credits.length > 0 && <p className="fine">Portraits: {credits.join('; ')}.</p>}
+    </>
+  );
 }
 
 function Offices({ list, queries, projects }: { list: Envelope<DistrictCard>[]; queries: QueryReport[]; projects: ScopedProject[] }) {

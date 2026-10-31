@@ -4,6 +4,9 @@
  *
  * Every GET is memoised for the life of the page: the API is read-only and
  * edge-cached, and the portal asks for the same overview from several views.
+ *
+ * In the browser, a URL stored by `npm run snapshot` is read from /snapshot/
+ * instead of the API. Anything not stored still goes to the API.
  */
 import type { DatasetKey } from '../config';
 import type {
@@ -52,9 +55,16 @@ export interface Client {
 
 const ROOT = '/api/v1/hgab/2027';
 
+/** API URL → stored file. Empty in Node, and where no snapshot exists (a static host answers with HTML, which fails to parse). */
+function loadSnapshot(): Promise<Record<string, string>> {
+  if (typeof window === 'undefined') return Promise.resolve({});
+  return fetch('/snapshot/manifest.json').then((r) => r.json()).catch(() => ({}));
+}
+
 export function createClient(base: string): Client {
   const host = base.replace(/\/+$/, '');
   const cache = new Map<string, Promise<unknown>>();
+  const snapshot = loadSnapshot();
 
   const href = (path: string, params: Params = {}) => {
     const url = new URL(path.startsWith('/api/') ? path : ROOT + path, host + '/');
@@ -69,7 +79,8 @@ export function createClient(base: string): Client {
     let hit = cache.get(url) as Promise<T> | undefined;
     if (!hit) {
       hit = (async () => {
-        const res = await fetch(url, { headers: { accept: 'application/json' } });
+        const file = (await snapshot)[url];
+        const res = await fetch(file ? `/snapshot/${file}` : url, { headers: { accept: 'application/json' } });
         if (!res.ok) {
           let message = `${res.status} ${res.statusText}`;
           try {
