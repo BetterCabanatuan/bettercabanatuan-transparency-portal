@@ -54,7 +54,8 @@ export interface ScopeResult {
 export const projectKey = (dataset: string, id: string) => `${dataset}:${id}`;
 
 export async function resolveScope(client: Client, config: PortalConfig): Promise<ScopeResult> {
-  const { offices = [], places = [], exclude = [] } = config.scope;
+  const { offices = [], places = [] } = config.scope;
+  const exclude = (config.scope.exclude ?? []).filter((e) => !e.key.startsWith('gaa:'));
 
   type Job = { kind: Reason['kind']; label: string; dataset: DatasetKey; params: Params; region?: string };
   const jobs: Job[] = [

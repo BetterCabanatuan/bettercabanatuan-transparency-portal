@@ -16,7 +16,9 @@ import type { PortalConfig } from '../src/config.ts';
 import { createClient } from '../src/api/client.ts';
 import { configProblems, DEFAULT_API } from '../src/config.ts';
 import { resolveScope, summarise } from '../src/lib/scope.ts';
-import { count, php } from '../src/lib/format.ts';
+import { departmentShort, gaaYearTotals, resolveGaa } from '../src/lib/gaa.ts';
+import { GAA_YEARS, type GaaEnvelope } from '../src/api/types.ts';
+import { count, php, plural } from '../src/lib/format.ts';
 
 const verbose = argv.includes('--verbose');
 // --config=examples/deo.config.ts checks another file; default portal.config.ts.
@@ -49,6 +51,7 @@ async function main() {
   }
 
   for (const { exclusion, project } of scope.excluded) {
+    // (2020–2026 exclusions, gaa:…, are checked below with the enacted budgets.)
     if (!project) problems.push(`exclusion ${exclusion.key} matches no line in the portal; remove it.`);
   }
 
@@ -77,6 +80,35 @@ async function main() {
       console.log(`  district ${d.data.label} · ${d.data.attribution.label}`);
     } catch {
       problems.push(`district "${id}" is not in the API. List them: npm run setup -- --list-districts`);
+    }
+  }
+
+  // The enacted budgets, 2020–2026: the same places, every department.
+  if (config.scope.places?.length) {
+    const gaa = await resolveGaa(api, config);
+    console.log(`\nEnacted budgets 2020–2026: ${plural(gaa.rows.length, "program or project", "programs and projects")} name the places (${count(gaa.searched)} departments searched)`);
+    for (const q of gaa.queries) {
+      console.log(`  "${q.q}" in ${departmentShort(q.department)}: ${count(q.matched)}${q.truncated ? ` (cut at ${count(q.fetched)})` : ''}`);
+      if (q.truncated) problems.push(`"${q.q}" matches ${count(q.matched)} ${departmentShort(q.department)} programs, more than the portal loads. Make q narrower.`);
+    }
+    for (const t of gaaYearTotals(gaa.rows)) console.log(`  ${t.year}: ${php(t.amount)} on ${count(t.programs)} programs`);
+
+    // Reconcile: for every search and year, the rows loaded add up to the API's own total for that search.
+    const withExcluded = [...gaa.rows, ...gaa.excluded.flatMap((x) => (x.row ? [x.row] : []))];
+    let checked = 0;
+    for (const q of gaa.queries) {
+      if (q.truncated) continue;
+      const mine = withExcluded.filter((r) => r.department_id === q.department_id && r.reasons.includes(q.place));
+      for (const year of GAA_YEARS) {
+        const theirs = (await api.json<GaaEnvelope<unknown[]>>(`/api/v1/gaa/departments/${q.department_id}/programs`, { q: q.q, limit: 1, year })).meta.matched_amount ?? 0;
+        const ours = mine.reduce((a, r) => a + (r.years[String(year)]?.amount ?? 0), 0);
+        checked++;
+        if (ours !== theirs) problems.push(`"${q.q}" in ${departmentShort(q.department)}, ${year}: rows add up to ${php(ours)}, the API says ${php(theirs)}.`);
+      }
+    }
+    console.log(`  reconciled ${count(checked)} department-years against the API's totals`);
+    for (const { exclusion, row } of gaa.excluded) {
+      if (!row) problems.push(`exclusion ${exclusion.key} matches no 2020–2026 program; remove it.`);
     }
   }
 

@@ -3,7 +3,9 @@
 A small, forkable website that shows citizens **every FY 2027 budget project** for one
 LGU (province, city or municipality) or one DPWH district engineering office: what the
 NEP gave it, what the House bill (House Bill 10858) gives it, what was added or dropped,
-and the page of the source document each figure is on.
+and the page of the source document each figure is on. Beside it, the **enacted budgets
+of 2020 to 2026** for the same area: each DPWH office's budget year by year, and every
+program or project in any department whose name names the place.
 
 <p align="center">
   <img src="docs/poster/create-your-own-transparency-portal-1080x1080.png" alt="Create your own transparency portal: for your LGU or DPWH district office. A sample portal for the Province of Bohol, and three steps: fork, run npm run setup, deploy." width="540">
@@ -37,8 +39,9 @@ writes `portal.config.ts`. That file is the only one a fork needs to change.
 | Page | What is on it |
 | --- | --- |
 | **Projects** (`/`) | The headline figures; the DPWH offices in scope (`#offices`), each with its 2027 figures, tier and status counts, and under it the legislative districts it serves with their representatives (a shared office's money is shown once, never split); the six statuses; and every project with search, filters (program, status, DPWH office, reason), sorting and a CSV download. An office's line count or status opens the list filtered to it. Filters live in the URL, so a filtered list can be shared. |
+| **Budgets 2020–2026** (`/gaa`) | The enacted budgets (GAA) for the same area: each DPWH office's whole budget by year, grouped by Congress, with the 2027 NEP and House bill beside it but apart; the yearly totals of the programs that name the place (click a year to filter); and every such program or project, in any department, with its amount in each year, search, department and year filters, and a CSV download. |
 | **A project** (`/projects/:program/:id`) | The amount in every version with a link to the exact PDF page, how the two versions were matched, notes on the line, and why it is in this portal. |
-| **About the data** (`/about`) | Every question the portal asks the API, with counts and a link to check each one, every line removed by hand and why, the source documents, plain-language rules and terms, and the notices. |
+| **About the data** (`/about`) | Every question the portal asks the API, for 2027 and for 2020–2026, with counts and a link to check each one, every line removed by hand and why, the source documents, plain-language rules and terms, and the notices. |
 
 ## How a portal decides which projects are its own
 
@@ -65,8 +68,13 @@ scope: {
   and the programs that have no office. `q` is the search: every word must appear
   (`'Carmen Bohol'` needs both). `region` keeps a common name to one region; lines that
   give no region at all (the irrigation list) are kept, since they cannot be ruled out.
-- **Exclusions** are for namesakes. `npm run check -- --verbose` lists the lines found
-  only by name under another office, which are the ones to review.
+- **The same place names** search the enacted budgets, 2020–2026: every department's
+  programs, activities and projects whose name contains `q`. The GAA has no region, so
+  `region` cannot narrow these; make `q` specific instead. DPWH offices' yearly totals
+  come with the offices.
+- **Exclusions** are for namesakes: `<program>:<id>` for a 2027 line, `gaa:<family key>`
+  for a 2020–2026 program (the key is in the CSV). `npm run check -- --verbose` lists the
+  2027 lines found only by name under another office, which are the ones to review.
 
 Examples for each kind are in [`examples/`](examples): a DEO, a highly urbanised city
 (Quezon City, whose offices are shared), and a municipality (Carmen, Bohol, a name used
@@ -97,6 +105,11 @@ These come from the API and the comparison behind it. A fork should keep them.
   drift from budget.bettergov.ph. Keep them on every page that shows figures.
 - Nothing is hidden silently: hand exclusions are listed, with reasons, on the About
   page.
+- Enacted amounts (2020–2026) are appropriations: the authority to spend, not spending.
+  A year counts only where its amount is above zero. Years are shown side by side, and
+  the 2027 versions are never added to them.
+- `npm run check` reconciles every 2020–2026 search, department by department and year
+  by year, against the API's own totals, so a lost page cannot go unnoticed.
 
 ## Citizen reports
 
@@ -145,8 +158,9 @@ build the poster.)
 portal.config.ts      the one file a fork edits
 src/config.ts         what the config means, and its checks
 src/api/              the API client and the response types it reads
-src/lib/scope.ts      config → the portal's projects, each with its reasons
-src/pages/            Projects (with offices and their districts), Project, About
+src/lib/scope.ts      config → the portal's 2027 projects, each with its reasons
+src/lib/gaa.ts        config → the 2020–2026 programs that name the places
+src/pages/            Projects (with offices and their districts), Enacted (2020–2026), Project, About
 src/styles/           theme tokens and layout
 scripts/setup.ts      npm run setup
 scripts/check.ts      npm run check (exits non-zero on a broken config; use it in CI)
